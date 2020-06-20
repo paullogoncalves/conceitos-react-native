@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 import {
   SafeAreaView,
@@ -9,10 +9,23 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
+import api from "./services/api";
 
 export default function App() {
+
+  const [repositories, setRepositories] = useState([]);
+
+  useEffect(() => {
+    api.get('repositories').then(response => {
+      setRepositories(response.data);
+    })
+  }, []);
+
   async function handleLikeRepository(id) {
-    // Implement "Like Repository" functionality
+    const repo = await api.post(`repositories/${id}/like`);
+
+    setRepositories([repo.data]);
+  
   }
 
   return (
@@ -32,23 +45,27 @@ export default function App() {
           </View>
 
           <View style={styles.likesContainer}>
+            {repositories.map(repository => (
             <Text
+              key={repository.id}
               style={styles.likeText}
-              // Remember to replace "1" below with repository ID: {`repository-likes-${repository.id}`}
-              testID={`repository-likes-1`}
+              testID={`repository-likes-${repository.id}`}
             >
-              3 curtidas
+              {repository.likes} curtidas
             </Text>
+            ))}
           </View>
 
+          {repositories.map(repository => (
           <TouchableOpacity
             style={styles.button}
-            onPress={() => handleLikeRepository(1)}
-            // Remember to replace "1" below with repository ID: {`like-button-${repository.id}`}
-            testID={`like-button-1`}
+            key={repository.id}
+            onPress={() =>  handleLikeRepository(repository.id)}
+            testID={`like-button-${repository.id}`}
           >
             <Text style={styles.buttonText}>Curtir</Text>
           </TouchableOpacity>
+          ))}
         </View>
       </SafeAreaView>
     </>
